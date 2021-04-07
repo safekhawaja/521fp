@@ -1,3 +1,5 @@
+% k Nearest Goons
+%%
 function [predicted_dg] = make_predictions(test_ecog)
 
 % INPUTS: test_ecog - 3 x 1 cell array containing ECoG for each subject, where test_ecog{i} 
