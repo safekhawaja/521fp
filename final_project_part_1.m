@@ -1,28 +1,3 @@
-%% Final project part 1
-% Prepared by John Bernabei and Brittany Scheid
-
-% One of the oldest paradigms of BCI research is motor planning: predicting
-% the movement of a limb using recordings from an ensemble of cells involved
-% in motor control (usually in primary motor cortex, often called M1).
-
-% This final project involves predicting finger flexion using intracranial EEG (ECoG) in three human
-% subjects. The data and problem framing come from the 4th BCI Competition. For the details of the
-% problem, experimental protocol, data, and evaluation, please see the original 4th BCI Competition
-% documentation (included as separate document). The remainder of the current document discusses
-% other aspects of the project relevant to BE521.
-
-
-%% Start the necessary ieeg.org sessions (0 points)
-
-% username = 'your_username';
-% passPath = 'your_ieeglogin.bin';
-
-% Load training ecog from each of three patients
-% s1_train_ecog = IEEGSession('I521_Sub1_Training_ecog', username, passPath);
-
-% Load training dataglove finger flexion values for each of three patients
-% s1_train_dg = IEEGSession('I521_Sub1_Training_dg', username, passPath);
-
 %% Extract dataglove and ECoG data 
 % Dataglove should be (samples x 5) array 
 % ECoG should be (samples x channels) array
@@ -103,85 +78,6 @@ f3 = mldivide(R3' * R3, R3' * Y3);
 % Try at least 1 other type of machine learning algorithm, you may choose
 % to loop through the fingers and train a separate classifier for angles 
 % corresponding to each finger
-%%
-feats1_std = (feats1-mean(feats1))./std(feats1);
-feats2_std = (feats2-mean(feats2))./std(feats2);
-feats3_std = (feats3-mean(feats3))./std(feats3);
-
-feats1_test = getWindowedFeats(test_ecog1,1000,.100,.050);
-feats2_test = getWindowedFeats(test_ecog2,1000,.100,.050);
-feats3_test = getWindowedFeats(test_ecog3,1000,.100,.050);
-
-
-feats1_test_std = (feats1_test-mean(feats1_test))./std(feats1_test);
-feats2_test_std = (feats2_test-mean(feats2_test))./std(feats2_test);
-feats3_test_std = (feats3_test-mean(feats3_test))./std(feats3_test);
-
-% feats1_std = feats1;
-% feats1_test_std = getWindowedFeats(test_ecog1,1000,.100,.050);
-% 
-% feats2_std = feats2;
-% feats2_test_std = getWindowedFeats(test_ecog2,1000,.100,.050);
-% 
-% feats3_std = feats3;
-% feats3_test_std = getWindowedFeats(test_ecog3,1000,.100,.050);
-
-%%
-
-% Subject 1
-preds1 = zeros(1499,5);
-
-model_11 = fitrlinear(feats1_std,Y1(:,1));
-preds1(:,1) = predict(model_11,feats1_test_std);
-
-model_12 = fitrlinear(feats1_std,Y1(:,2));
-preds1(:,2) = predict(model_12,feats1_test_std);
-
-model_13 = fitrlinear(feats1_std,Y1(:,3));
-preds1(:,3) = predict(model_13,feats1_test_std);
-
-model_14 = fitrlinear(feats1_std,Y1(:,4));
-preds1(:,4) = predict(model_14,feats1_test_std);
-
-model_15 = fitrlinear(feats1_std,Y1(:,5));
-preds1(:,5) = predict(model_15,feats1_test_std);
-
-% Subject 2
-preds2 = zeros(1499,5);
-model_21 = fitrlinear(feats2_std,Y2(:,1));
-preds2(:,1) = predict(model_21,feats2_test_std);
-
-model_22 = fitrlinear(feats2_std,Y2(:,2));
-preds2(:,2) = predict(model_22,feats2_test_std);
-
-model_23 = fitrlinear(feats2_std,Y2(:,3));
-preds2(:,3) = predict(model_23,feats2_test_std);
-
-model_24 = fitrlinear(feats2_std,Y2(:,4));
-preds2(:,4) = predict(model_24,feats2_test_std);
-
-model_25 = fitrlinear(feats2_std,Y2(:,5));
-preds2(:,5) = predict(model_25,feats2_test_std);
-
-% Subject 3
-preds3 = zeros(1499,5);
-model_31 = fitrlinear(feats3_std,Y3(:,1));
-preds3(:,1) = predict(model_31,feats3_test_std);
-
-model_32 = fitrlinear(feats3_std,Y3(:,2));
-preds3(:,2) = predict(model_32,feats3_test_std);
-
-model_33 = fitrlinear(feats3_std,Y3(:,3));
-preds3(:,3) = predict(model_33,feats3_test_std);
-
-model_34 = fitrlinear(feats3_std,Y3(:,4));
-preds3(:,4) = predict(model_34,feats3_test_std);
-
-model_35 = fitrlinear(feats3_std,Y3(:,5));
-preds3(:,5) = predict(model_35,feats3_test_std);
-
-% Try a form of either feature or prediction post-processing to try and
-% improve underlying data or predictions.
 
 %% Correlate data to get test accuracy and make figures (2 point)
 
@@ -203,18 +99,72 @@ Y_test3 = R_test3 * f3;
 
 
 %%
+new1 = smoothdata(Y_test1, 'movmean',5);
+
+for j = 1:5
+    filtered = new1(:, j);
+    for i = 1:length(filtered)
+        if filtered(i) < 0.3 && filtered(i) > 0
+            filtered(i) = filtered(i) * 0.1;
+        elseif filtered(i) < 0
+            filtered(i) = filtered(i) * .3;
+        elseif filtered(i) > 1
+            filtered(i) = filtered(i) * 1.25;
+        end
+    end
+    scale1(:, j) = filtered;
+end
+
+
+new2 = smoothdata(Y_test2, 'movmean',5);
+
+for j = 1:5
+    filtered = new2(:, j);
+    for i = 1:length(filtered)
+        if filtered(i) < 0.3 && filtered(i) > 0
+            filtered(i) = filtered(i) * .5;
+        elseif filtered(i) < 0
+            filtered(i) = filtered(i) * 0.3;
+        elseif filtered(i) > 1.5 && filtered(i) < 2
+            filtered(i) = filtered(i) * 1.25;
+        elseif filtered(i) > 2
+            filtered(i) = filtered(i) * 1.5;
+        end
+    end
+    scale2(:, j) = filtered;
+end
+
+
+new3 = smoothdata(Y_test3, 'movmean',5);
+
+for j = 1:5
+    filtered = new3(:, j);
+    for i = 1:length(filtered)
+        if filtered(i) < 0.3 && filtered(i) > 0
+            filtered(i) = filtered(i) * 0.1;
+        elseif filtered(i) < 0
+            filtered(i) = filtered(i) * .3;
+        elseif filtered(i) > 1
+            filtered(i) = filtered(i) * 1.25;
+        end
+    end
+    scale3(:, j) = filtered;
+end
+%%
+
+% figure();
+% plot(1:length(Y5(:)), Y5(:));
+% hold on
+% plot(1:length(Y5(:)), scale2(:), 'g');
+
+%%
 % Linear filter
-corr1 = corr(Y_test1(:), Y4(:));
-corr2 = corr(Y_test2(:), Y5(:));
-corr3 = corr(Y_test3(:), Y6(:));
-%%
-% kNN models
-corr_model1 = corr(preds1(:), Y4(:));
-corr_model2 = corr(preds2(:), Y5(:));
-corr_model3 = corr(preds3(:), Y6(:));
+corr1 = corr(scale1(:), Y4(:));
+corr2 = corr(scale2(:), Y5(:));
+corr3 = corr(scale3(:), Y6(:));
 
 %%
-
+load('leaderboard_data.mat');
 lead1_raw = leaderboard_ecog{1};
 lead1 = getWindowedFeats(lead1_raw,1000,.100,.050);
 lead1_std = (lead1-mean(lead1))./std(lead1);
@@ -229,40 +179,6 @@ lead3_raw = leaderboard_ecog{3};
 lead3 = getWindowedFeats(lead3_raw,1000,.100,.050);
 lead3_std = (lead3-mean(lead3))./std(lead3);
 %lead3_std = lead3;
-
-% Subject 1
-preds1 = zeros(length(lead1_std),5);
-preds1(:,1) = predict(model_11,lead1_std);
-preds1(:,2) = predict(model_12,lead1_std);
-preds1(:,3) = predict(model_13,lead1_std);
-preds1(:,4) = predict(model_14,lead1_std);
-preds1(:,5) = predict(model_15,lead1_std);
-preds1_interp = interp1(1:length(preds1), preds1, linspace(1,length(preds1),length(lead1_raw)), 'cubic');
-
-% Subject 2
-preds2 = zeros(length(lead2_std),5);
-preds2(:,1) = predict(model_21,lead2_std);
-preds2(:,2) = predict(model_22,lead2_std);
-preds2(:,3) = predict(model_23,lead2_std);
-preds2(:,4) = predict(model_24,lead2_std);
-preds2(:,5) = predict(model_25,lead2_std);
-preds2_interp = interp1(1:length(preds2), preds2, linspace(1,length(preds2),length(lead2_raw)), 'cubic');
-
-% Subject 3
-preds3 = zeros(length(lead3_std),5);
-preds3(:,1) = predict(model_31,lead3_std);
-preds3(:,2) = predict(model_32,lead3_std);
-preds3(:,3) = predict(model_33,lead3_std);
-preds3(:,4) = predict(model_34,lead3_std);
-preds3(:,5) = predict(model_35,lead3_std);
-preds3_interp = interp1(1:length(preds3), preds3, linspace(1,length(preds3),length(lead3_raw)), 'cubic');
-
-predicted_dg = cell(3,1);
-predicted_dg{1} = preds1_interp;
-predicted_dg{2} = preds2_interp;
-predicted_dg{3} = preds3_interp;
-
-save('predicted_dg.mat', 'predicted_dg');
 
 %%
 % Leaderboard linear filter
@@ -283,11 +199,89 @@ preds1_interp = interp1(1:length(Y_lead1), Y_lead1, linspace(1,length(Y_lead1),l
 preds2_interp = interp1(1:length(Y_lead2), Y_lead2, linspace(1,length(Y_lead2),length(lead2_raw)), 'cubic');
 preds3_interp = interp1(1:length(Y_lead3), Y_lead3, linspace(1,length(Y_lead3),length(lead3_raw)), 'cubic');
 
+%%
+preds = cell(3,1);
+preds{1} = preds1_interp;
+preds{2} = preds2_interp;
+preds{3} = preds3_interp;
 
-predicted_dg = cell(3,1);
-predicted_dg{1} = preds1_interp;
-predicted_dg{2} = preds2_interp;
-predicted_dg{3} = preds3_interp;
+% save('predicted_dg.mat', 'predicted_dg');
 
+%%
+% for sub=1:3
+%     new = smoothdata(preds{sub}, 'movmean',5);
+% 
+%     for j = 1:5
+%         filtered = new(:, j);
+%         if filtered(i) < 0.3 && filtered(i) > 0
+%             filtered(i) = filtered(i) * 0.1;
+%         elseif filtered(i) < 0
+%             filtered(i) = filtered(i) * .3;
+%         elseif filtered(i) > 1
+%             filtered(i) = filtered(i) * 1.25;
+%         end
+%         scaled_lb(:, j) = filtered;
+%     end
+%     predicted_dg{sub, 1} = scaled_lb;
+% end
+
+%%
+new_lb1 = smoothdata(preds{1}, 'movmean',5);
+
+for j = 1:5
+    filtered = new_lb1(:, j);
+    for i = 1:length(filtered)
+        if filtered(i) < 0.3 && filtered(i) > 0
+            filtered(i) = filtered(i) * 0.1;
+        elseif filtered(i) < 0
+            filtered(i) = filtered(i) * .3;
+        elseif filtered(i) > 1
+            filtered(i) = filtered(i) * 1.25;
+        end
+    end
+    scale_lb1(:, j) = filtered;
+end
+
+
+new_lb2 = smoothdata(preds{2}, 'movmean',5);
+
+for j = 1:5
+    filtered = new_lb2(:, j);
+    for i = 1:length(filtered)
+        if filtered(i) < 0.3 && filtered(i) > 0
+            filtered(i) = filtered(i) * .5;
+        elseif filtered(i) < 0
+            filtered(i) = filtered(i) * 0.3;
+        elseif filtered(i) > 1.5 && filtered(i) < 2
+            filtered(i) = filtered(i) * 1.25;
+        elseif filtered(i) > 2
+            filtered(i) = filtered(i) * 1.5;
+        end
+    end
+    scale_lb2(:, j) = filtered;
+end
+
+
+new_lb3 = smoothdata(preds{3}, 'movmean',5);
+
+for j = 1:5
+    filtered = new_lb3(:, j);
+    for i = 1:length(filtered)
+        if filtered(i) < 0.3 && filtered(i) > 0
+            filtered(i) = filtered(i) * 0.1;
+        elseif filtered(i) < 0
+            filtered(i) = filtered(i) * .3;
+        elseif filtered(i) > 1
+            filtered(i) = filtered(i) * 1.25;
+        end
+    end
+    scale_lb3(:, j) = filtered;
+end
+
+predicted_dg{1, 1} = scale_lb1;
+predicted_dg{2, 1} = scale_lb2;
+predicted_dg{3, 1} = scale_lb3;
+
+%%
 save('predicted_dg.mat', 'predicted_dg');
 

@@ -28,6 +28,12 @@ function [all_feats]=getWindowedFeats_release(raw_data, fs, window_length, windo
 % First, filter the raw data
 cleaned_data = filter_data(raw_data);
 
+avg = mean(cleaned_data');
+for i = 1:size(cleaned_data, 1)
+    for j = 1:size(cleaned_data, 2)
+        cleaned_data(i,j) = cleaned_data(i,j) - avg;
+    end
+end
 
 % Then, loop through sliding windows
 NumWins = @(xLen, fs, winLen, winDisp) round((xLen/fs-winLen)/winDisp+1);
