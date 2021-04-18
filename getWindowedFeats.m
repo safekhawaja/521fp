@@ -31,7 +31,7 @@ cleaned_data = filter_data(raw_data);
 avg = mean(cleaned_data');
 for i = 1:size(cleaned_data, 1)
     for j = 1:size(cleaned_data, 2)
-        cleaned_data(i,j) = cleaned_data(i,j) - avg;
+        cleaned_data(i,j) = cleaned_data(i,j) - avg(i);
     end
 end
 
