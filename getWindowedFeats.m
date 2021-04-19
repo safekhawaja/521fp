@@ -28,9 +28,18 @@ function [all_feats]=getWindowedFeats_release(raw_data, fs, window_length, windo
 % First, filter the raw data
 cleaned_data = filter_data(raw_data);
 
-avg = mean(cleaned_data');
-for i = 1:size(cleaned_data, 1)
-    for j = 1:size(cleaned_data, 2)
+if size(cleaned_data, 2)==62
+    cleaned_data = cleaned_data(:, [1:5, 15:28, 34:47]); %33
+elseif size(cleaned_data, 2)==48
+    cleaned_data = cleaned_data(:, [7:13, 15:29, 34:38, 43:46]); %31
+elseif size(cleaned_data, 2)==64
+    cleaned_data = cleaned_data(:, [7:29, 41:49, 51:61]); %43
+end
+
+transpose = cleaned_data';
+avg = mean(transpose);
+for j = 1:size(cleaned_data, 2)
+    for i = 1:size(cleaned_data, 1)
         cleaned_data(i,j) = cleaned_data(i,j) - avg(i);
     end
 end

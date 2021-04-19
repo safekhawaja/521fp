@@ -27,16 +27,16 @@ test_dg3 = train_dg{3}(split+1:end,:);
 %% Get Features
 % run getWindowedFeats_release function
 
-feats1 = getWindowedFeats(train_ecog1,1000,.100,.050);
-feats2 = getWindowedFeats(train_ecog2,1000,.100,.050);
-feats3 = getWindowedFeats(train_ecog3,1000,.100,.050);
+feats1 = getWindowedFeats(train_ecog1,1000,.10,.05);
+feats2 = getWindowedFeats(train_ecog2,1000,.10,.05);
+feats3 = getWindowedFeats(train_ecog3,1000,.10,.05);
 
 %% Create R matrix
 % run create_R_matrix
 
-R1 = create_R_matrix(feats1,3);
-R2 = create_R_matrix(feats2,3);
-R3 = create_R_matrix(feats3,3);
+R1 = create_R_matrix(feats1,4);
+R2 = create_R_matrix(feats2,4);
+R3 = create_R_matrix(feats3,4);
 
 %% Train classifiers (8 points)
 
@@ -85,13 +85,13 @@ f3 = mldivide(R3' * R3, R3' * Y3);
 % finger separately. Hint: You will want to use zohinterp to ensure both 
 % vectors are the same length.
 
-feats_test1 = getWindowedFeats(test_ecog1,1000,.100,.050);
-feats_test2 = getWindowedFeats(test_ecog2,1000,.100,.050);
-feats_test3 = getWindowedFeats(test_ecog3,1000,.100,.050);
+feats_test1 = getWindowedFeats(test_ecog1,1000,.10,.05);
+feats_test2 = getWindowedFeats(test_ecog2,1000,.10,.05);
+feats_test3 = getWindowedFeats(test_ecog3,1000,.10,.05);
 
-R_test1 = create_R_matrix(feats_test1,3);
-R_test2 = create_R_matrix(feats_test2,3);
-R_test3 = create_R_matrix(feats_test3,3);
+R_test1 = create_R_matrix(feats_test1,4);
+R_test2 = create_R_matrix(feats_test2,4);
+R_test3 = create_R_matrix(feats_test3,4);
 
 Y_test1 = R_test1 * f1;
 Y_test2 = R_test2 * f2;
@@ -152,12 +152,13 @@ for j = 1:5
 end
 %%
 
-% figure();
-% plot(1:length(Y5(:)), Y5(:));
-% hold on
-% plot(1:length(Y5(:)), scale2(:), 'g');
+figure();
+plot(1:length(Y5(:)), Y5(:));
+hold on
+plot(1:length(Y5(:)), scale2(:), 'g');
 
 %%
+
 % Linear filter
 corr1 = corr(scale1(:), Y4(:));
 corr2 = corr(scale2(:), Y5(:));
@@ -166,38 +167,29 @@ corr3 = corr(scale3(:), Y6(:));
 %%
 load('leaderboard_data.mat');
 lead1_raw = leaderboard_ecog{1};
-lead1 = getWindowedFeats(lead1_raw,1000,.100,.050);
-lead1_std = (lead1-mean(lead1))./std(lead1);
-%lead1_std = lead1;
 
 lead2_raw = leaderboard_ecog{2};
-lead2 = getWindowedFeats(lead2_raw,1000,.100,.050);
-lead2_std = (lead2-mean(lead2))./std(lead2);
-%lead2_std = lead2;
 
 lead3_raw = leaderboard_ecog{3};
-lead3 = getWindowedFeats(lead3_raw,1000,.100,.050);
-lead3_std = (lead3-mean(lead3))./std(lead3);
-%lead3_std = lead3;
 
 %%
 % Leaderboard linear filter
 
-lead1 = getWindowedFeats(lead1_raw,1000,.100,.050);
-lead2 = getWindowedFeats(lead2_raw,1000,.100,.050);
-lead3 = getWindowedFeats(lead3_raw,1000,.100,.050);
+lead1 = getWindowedFeats(lead1_raw,1000,.10,.05);
+lead2 = getWindowedFeats(lead2_raw,1000,.10,.05);
+lead3 = getWindowedFeats(lead3_raw,1000,.10,.05);
 
-R_lead1 = create_R_matrix(lead1,3);
-R_lead2 = create_R_matrix(lead2,3);
-R_lead3 = create_R_matrix(lead3,3);
+R_lead1 = create_R_matrix(lead1,4);
+R_lead2 = create_R_matrix(lead2,4);
+R_lead3 = create_R_matrix(lead3,4);
 
 Y_lead1 = R_lead1 * f1;
 Y_lead2 = R_lead2 * f2;
 Y_lead3 = R_lead3 * f3;
 
-preds1_interp = interp1(1:length(Y_lead1), Y_lead1, linspace(1,length(Y_lead1),length(lead1_raw)), 'cubic');
-preds2_interp = interp1(1:length(Y_lead2), Y_lead2, linspace(1,length(Y_lead2),length(lead2_raw)), 'cubic');
-preds3_interp = interp1(1:length(Y_lead3), Y_lead3, linspace(1,length(Y_lead3),length(lead3_raw)), 'cubic');
+preds1_interp = interp1(1:length(Y_lead1), Y_lead1, linspace(1,length(Y_lead1),length(lead1_raw)), 'spline');
+preds2_interp = interp1(1:length(Y_lead2), Y_lead2, linspace(1,length(Y_lead2),length(lead2_raw)), 'spline');
+preds3_interp = interp1(1:length(Y_lead3), Y_lead3, linspace(1,length(Y_lead3),length(lead3_raw)), 'spline');
 
 %%
 preds = cell(3,1);
