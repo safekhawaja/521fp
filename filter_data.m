@@ -15,11 +15,7 @@ function clean_data = filter_data_release(raw_eeg)
     % Output:   clean_data (samples x channels)
     % 
 %% Your code here (2 points) 
-%      load('filter.mat');
-%      clean_data = filtfilt(coefs, 1, raw_eeg);
-%     [~,d] = bandpass(raw_eeg, [0.15,200],1000);
-% 
-%     clean_data = filter(d,raw_eeg);
+
 clean_data = raw_eeg;
 
 end

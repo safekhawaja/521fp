@@ -18,13 +18,12 @@ function [features] = get_features_release(clean_data,fs)
     % Output:   features:   (1 x (channels*features))
     % 
 %% Your code here (8 points)
-LLFn = @(x) sum(abs(diff(x)));
-Area = @(x) sum(abs(x));
-Energy = @(x) sum(x.^2);
-ZC = @(x) sum(abs(diff((x-mean(x))>0)));
+% LLFn = @(x) sum(abs(diff(x)));
+% Area = @(x) sum(abs(x));
+% Energy = @(x) sum(x.^2);
+% ZC = @(x) sum(abs(diff((x-mean(x))>0)));
 LMP = @(x) mean(x);
 
 features = [LMP(clean_data) bandpower(clean_data,fs,[8 12]) bandpower(clean_data,fs,[18 24]) bandpower(clean_data,fs,[75 115]) bandpower(clean_data,fs,[125 159]) bandpower(clean_data,fs,[159 175])];
-%features = [LLFn(clean_data) Area(clean_data) sum(diff(sign(diff(clean_data)))~=0)];
 end
 

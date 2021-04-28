@@ -75,6 +75,13 @@ f1 = mldivide(R1' * R1, R1' * Y1);
 f2 = mldivide(R2' * R2, R2' * Y2);
 f3 = mldivide(R3' * R3, R3' * Y3);
 
+model{1, 1} = f1;
+model{2, 1} = f2;
+model{3, 1} = f3;
+%%
+save('model.mat', 'model');
+
+
 % Try at least 1 other type of machine learning algorithm, you may choose
 % to loop through the fingers and train a separate classifier for angles 
 % corresponding to each finger
@@ -115,6 +122,13 @@ for j = 1:5
     scale1(:, j) = filtered;
 end
 
+% figure();
+% plot(1:length(Y4(:)), Y4(:));
+% hold on
+% plot(1:length(Y4(:)), scale1(:), 'g');
+% title('Subject 1 Processed Predictions vs. Test Dataglove Data');
+% xlabel('Time (s)');
+% ylabel('Voltage (uV)');
 
 new2 = smoothdata(Y_test2, 'movmean',5);
 
@@ -134,6 +148,13 @@ for j = 1:5
     scale2(:, j) = filtered;
 end
 
+% figure();
+% plot(1:length(Y5(:)), Y5(:));
+% hold on
+% plot(1:length(Y5(:)), scale2(:), 'g');
+% title('Subject 2 Processed Predictions vs. Test Dataglove Data');
+% xlabel('Time (s)');
+% ylabel('Voltage (uV)');
 
 new3 = smoothdata(Y_test3, 'movmean',5);
 
@@ -150,6 +171,15 @@ for j = 1:5
     end
     scale3(:, j) = filtered;
 end
+
+% figure();
+% plot(1:length(Y6(:)), Y6(:));
+% hold on
+% plot(1:length(Y6(:)), scale3(:), 'g');
+% title('Subject 3 Processed Predictions vs. Test Dataglove Data');
+% xlabel('Time (s)');
+% ylabel('Voltage (uV)');
+
 %%
 
 figure();
@@ -187,9 +217,9 @@ Y_lead1 = R_lead1 * f1;
 Y_lead2 = R_lead2 * f2;
 Y_lead3 = R_lead3 * f3;
 
-preds1_interp = interp1(1:length(Y_lead1), Y_lead1, linspace(1,length(Y_lead1),length(lead1_raw)), 'spline');
-preds2_interp = interp1(1:length(Y_lead2), Y_lead2, linspace(1,length(Y_lead2),length(lead2_raw)), 'spline');
-preds3_interp = interp1(1:length(Y_lead3), Y_lead3, linspace(1,length(Y_lead3),length(lead3_raw)), 'spline');
+preds1_interp = interp1(1:length(Y_lead1), Y_lead1, linspace(1,length(Y_lead1),length(lead1_raw)), 'cubic');
+preds2_interp = interp1(1:length(Y_lead2), Y_lead2, linspace(1,length(Y_lead2),length(lead2_raw)), 'cubic');
+preds3_interp = interp1(1:length(Y_lead3), Y_lead3, linspace(1,length(Y_lead3),length(lead3_raw)), 'cubic');
 
 %%
 preds = cell(3,1);
@@ -275,5 +305,5 @@ predicted_dg{2, 1} = scale_lb2;
 predicted_dg{3, 1} = scale_lb3;
 
 %%
-save('predicted_dg.mat', 'predicted_dg');
+% save('predicted_dg.mat', 'predicted_dg');
 
